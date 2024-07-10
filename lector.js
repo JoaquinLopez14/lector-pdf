@@ -33,7 +33,6 @@ async function readPDF(filepath) {
 }
 
 function renderPage(pageData) {
-  // Extraer la primera página
   if (pageData.pageIndex === 0) {
     return pageData.getTextContent().then((textContent) => {
       let text = "";
