@@ -1,34 +1,63 @@
 const fs = require("fs");
 const pdf = require("pdf-parse");
 
-async function readPDF(filepath) {
-  const dataBuffer = fs.readFileSync(filepath);
+const filepaths = [
+  "A-3_550.pdf",
+  "A-3_472.pdf",
+  "A-3_547.pdf",
+  "B-3_5108.pdf",
+  "B-3_5133.pdf",
+  "B-3_5078.pdf",
+];
 
-  try {
-    const data = await pdf(dataBuffer, { pagerender: renderPage });
-    const texto = data.text;
+async function totalPrice(filepaths) {
+  for (const filepath of filepaths) {
+    const dataBuffer = fs.readFileSync(filepath);
 
-    // Imprimir 100 caracteres antes y después de "Importe Total"
-    const contextRegex = /.{0,100}Importe\s+Total.{0,10}/i;
-    const contextMatch = contextRegex.exec(texto);
+    try {
+      const data = await pdf(dataBuffer, { pagerender: renderPage });
+      const texto = data.text;
 
-    if (contextMatch) {
-      console.log("Contexto alrededor de 'Importe Total':");
-      console.log(contextMatch[0]);
+      if (texto.includes("COD. 01") && texto.includes("Importe Total")) {
+        const numberMatch = /Importe\s+Total.*?([\d.,]+)/i.exec(texto);
+        if (numberMatch) {
+          const importeTotal = numberMatch[1];
+          console.log(`Importe Total de la factura ${filepath}:`, importeTotal);
+        } else {
+          console.log(
+            `No se encontró el número al lado de 'Importe Total' en el archivo ${filepath}`
+          );
+        }
+      } else if (
+        texto.includes("COD. 006") &&
+        texto.includes("Importe Total")
+      ) {
+        const contextRegex = /.{0,70}Importe\s+Total.{0,4}/i;
+        const contextMatch = contextRegex.exec(texto);
 
-      const fragmentos = contextMatch[0].split(" ");
-      fragmentos.forEach((fragmento, index) => {
-        console.log(`Fragmento ${index}: ${fragmento.trim()}`);
-      });
-    } else {
-      console.log("No se encontró 'Importe Total' en el texto.");
+        if (contextMatch) {
+          const context = contextMatch[0];
+          const numbers = context.match(/[\d.,]+/g);
+
+          if (numbers) {
+            const maxNumber = numbers.reduce((max, num) => {
+              return num.length > max.length ? num : max;
+            }, "");
+            console.log(`Importe Total de la factura ${filepath}:`, maxNumber);
+          } else {
+            console.log(
+              `No se encontraron números en el archivo ${filepath} (Factura B)`
+            );
+          }
+        }
+      } else {
+        console.log(
+          `El archivo ${filepath} no incluye el código esperado o 'Importe Total'`
+        );
+      }
+    } catch (error) {
+      console.error(`Error al leer el archivo ${filepath}`, error);
     }
-
-    const importeTotalRegex = /Importe\s+Total:\s*\$?\s*([\d.,]+)/i;
-    const match = importeTotalRegex.exec(texto);
-  } catch (error) {
-    console.error("Error al leer el PDF", error);
-    return null;
   }
 }
 
@@ -45,13 +74,4 @@ function renderPage(pageData) {
   return "";
 }
 
-const filePath = "A-3_547.pdf";
-readPDF(filePath).then((importeTotal) => {
-  console.log("Importe Total de la primera página del PDF:");
-  console.log(importeTotal);
-});
-
-/* Facturas A working with
-    const contextRegex = /.{0,100}Importe\s+Total.{0,10}/i;
-    const contextMatch = contextRegex.exec(texto);
-*/
+totalPrice(filepaths);
