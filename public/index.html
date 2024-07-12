@@ -3,21 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
     <title>Lector de PDF</title>
   </head>
   <body>
-    <h1>Lector de pdf</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <input
-        type="file"
-        name="pdf"
-        id="pdf"
-        accept="application/pdf"
-        multiple
-        required />
-      <button type="submit">Subir PDFs</button>
-    </form>
-    <pre id="result"></pre>
+    <h1>Lector de PDF</h1>
+    <div class="form-container">
+      <form
+        id="uploadForm"
+        action="/process"
+        method="POST"
+        enctype="multipart/form-data">
+        <input
+          type="file"
+          name="pdf"
+          id="pdf"
+          accept="application/pdf"
+          multiple
+          required />
+        <button id="submit">Mostrar PDFs</button>
+      </form>
+    </div>
+    <div class="buttons-container">
+      <button class="button" id="selectAll">Seleccionar Todos</button>
+      <button class="button" id="sortButton">Ordenar</button>
+      <button class="button" id="apply21">Aplicar 21%</button>
+      <button class="button" id="apply105">Aplicar 10,5%</button>
+    </div>
+    <div id="table-container"></div>
     <script src="app.js"></script>
   </body>
 </html>

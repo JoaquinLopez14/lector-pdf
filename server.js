@@ -2,11 +2,12 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { totalPrice } = require("./totalPrice");
-const { extractDay } = require("./day");
-const { extractType } = require("./type");
-const { extractRecipe } = require("./recipe");
-const { extractCondition } = require("./conditionIva");
+const { totalPrice } = require("./modules/totalPrice");
+const { extractDay } = require("./modules/day");
+const { extractType } = require("./modules/type");
+const { extractRecipe } = require("./modules/recipe");
+const { extractCondition } = require("./modules/conditionIva");
+const { extractCuit } = require("./modules/cuit.js");
 
 const app = express();
 const PORT = 3000;
@@ -22,18 +23,15 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-//----------------------------------------------------------------------------------
-
 app.use(express.static("public"));
 
-// Procesar los PDF subidos --------------------------------------------------------
-app.post("/process", upload.array("pdf", 12), async (req, res) => {
+// Procesar los PDF subidos
+app.post("/process", upload.array("pdf", 62), async (req, res) => {
   const files = req.files;
-
   const results = [];
 
   for (const file of files) {
-    const filepath = path.join(__dirname, file.path);
+    const filepath = path.join(__dirname, "uploads", file.filename);
 
     try {
       const dayResult = await extractDay(filepath);
@@ -41,13 +39,15 @@ app.post("/process", upload.array("pdf", 12), async (req, res) => {
       const priceResult = await totalPrice(filepath);
       const recipeResult = await extractRecipe(filepath);
       const conditionResult = await extractCondition(filepath);
+      const cuitResult = await extractCuit(filepath);
 
       if (
         dayResult.error ||
         typeResult.error ||
         priceResult.error ||
         recipeResult.error ||
-        conditionResult.error
+        conditionResult.error ||
+        cuitResult.error
       ) {
         results.push({
           filepath: file.originalname,
@@ -56,19 +56,21 @@ app.post("/process", upload.array("pdf", 12), async (req, res) => {
       } else {
         results.push({
           filepath: file.originalname,
-          type: typeResult.type,
           day: dayResult.dia,
-          price: priceResult.importeTotal,
+          type: typeResult.type,
           recipe: recipeResult.comp,
           condition: conditionResult.condition,
+          cuit: cuitResult.cuit,
+          totalPrice: priceResult.importeTotal,
         });
       }
 
-      fs.unlinkSync(filepath);
+      fs.unlinkSync(filepath); // Eliminar el archivo después de procesarlo
     } catch (error) {
       results.push({ filepath: file.originalname, error: error.message });
     }
   }
+
   res.json(results);
 });
 
