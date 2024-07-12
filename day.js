@@ -10,16 +10,16 @@ async function extractDay(filepath) {
     if (texto.includes("Fecha de Emisión:")) {
       const fechaMatch = /\s*(\d{2})\/\d{2}\/\d{4}/i.exec(texto);
       if (fechaMatch) {
-        const dia = fechaMatch[1]; // Captura solo el día
-        console.log(`Día de emisión de la factura ${filepath}:`, dia);
+        const dia = fechaMatch[1];
+        return { dia };
       } else {
-        console.log(`No se encontró el día de emisión en ${filepath}`);
+        return { error: `No se encontró el dia` };
       }
     } else {
-      console.log(`No se encontró la frase 'Fecha de Emisión:' en ${filepath}`);
+      return { error: `No se encontró la frase 'Fecha de Emisión:'` };
     }
   } catch (error) {
-    console.error(`Error al leer el archivo ${filepath}`, error);
+    return { error: `Error al leer el archivo: ${error.message}` };
   }
 }
 

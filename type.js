@@ -1,24 +1,21 @@
 const fs = require("fs");
 const pdf = require("pdf-parse");
 
-async function type(filepaths) {
-  for (const filepath of filepaths) {
+async function extractType(filepath) {
+  try {
     const dataBuffer = fs.readFileSync(filepath);
+    const data = await pdf(dataBuffer, { pagerender: renderPage });
+    const texto = data.text;
 
-    try {
-      const data = await pdf(dataBuffer, { pagerender: renderPage });
-      const texto = data.text;
-
-      if (texto.includes("COD. 006")) {
-        const type = "B";
-        console.log(`La factura ${filepath} es tipo`, type);
-      } else if (texto.includes("COD. 01")) {
-        const type = "A";
-        console.log(`La factura ${filepath} es tipo`, type);
-      }
-    } catch (error) {
-      console.error(`Error al leer el archivo ${filepath}`, error);
+    if (texto.includes("COD. 006")) {
+      const type = "B";
+      return { type };
+    } else if (texto.includes("COD. 01")) {
+      const type = "A";
+      return { type };
     }
+  } catch (error) {
+    return { error: `Error al leer el archivo: ${error.message}` };
   }
 }
 
@@ -35,4 +32,4 @@ function renderPage(pageData) {
   return "";
 }
 
-module.exports = { type };
+module.exports = { extractType };

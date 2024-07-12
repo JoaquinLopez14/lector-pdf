@@ -1,29 +1,28 @@
 const fs = require("fs");
 const pdf = require("pdf-parse");
 
-async function extractRecipe(filepaths) {
-  for (const filepath of filepaths) {
+async function extractRecipe(filepath) {
+  try {
     const dataBuffer = fs.readFileSync(filepath);
+    const data = await pdf(dataBuffer, { pagerender: renderPage });
+    const texto = data.text;
 
-    try {
-      const data = await pdf(dataBuffer, { pagerender: renderPage });
-      const texto = data.text;
+    if (texto.includes("Comp. Nro:")) {
+      const comprobante = /00003.*?([\d.,]+)/i.exec(texto);
 
-      if (texto.includes("Comp. Nro:")) {
-        const comprobante = /00003.*?([\d.,]+)/i.exec(texto);
-
-        if (comprobante) {
-          const comp = comprobante[0];
-          console.log(`El comprobante de la factura ${filepath} es:`, comp);
-        } else {
-          console.log("No se encontro un comprobante");
-        }
+      if (comprobante) {
+        const comp = comprobante[0];
+        return { comp };
       } else {
-        console.log("No puedo leer el numero de comprobante");
+        return {
+          error: `No se encontro el numero del comprobante ${error.message}`,
+        };
       }
-    } catch (error) {
-      console.error(`Error al leer el archivo ${filepath}`, error);
+    } else {
+      return { error: `No se pudo leer el comprobante ${error.message}` };
     }
+  } catch (error) {
+    return { error: `No se pudo leer el archivo${error.message}` };
   }
 }
 
