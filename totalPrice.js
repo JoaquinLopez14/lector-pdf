@@ -2,12 +2,12 @@ const fs = require("fs");
 const pdf = require("pdf-parse");
 
 const filepaths = [
-  "A-3_550.pdf",
-  "A-3_472.pdf",
-  "A-3_547.pdf",
-  "B-3_5108.pdf",
-  "B-3_5133.pdf",
-  "B-3_5078.pdf",
+  "pdf/A-3_550.pdf",
+  "pdf/A-3_472.pdf",
+  "pdf/A-3_547.pdf",
+  "pdf/B-3_5108.pdf",
+  "pdf/B-3_5133.pdf",
+  "pdf/B-3_5078.pdf",
 ];
 
 async function totalPrice(filepaths) {
@@ -74,4 +74,4 @@ function renderPage(pageData) {
   return "";
 }
 
-totalPrice(filepaths);
+module.exports = { totalPrice };
