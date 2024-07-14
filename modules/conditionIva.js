@@ -8,13 +8,13 @@ async function extractCondition(filepath) {
     const texto = data.text;
 
     if (texto.includes("Consumidor Final")) {
-      const condition = "Consumidor Final";
+      const condition = "Consum.Final";
       return { condition };
     } else if (texto.includes("Exento")) {
       const condition = "Exento";
       return { condition };
     } else {
-      const condition = "IVA Responsable Inscripto";
+      const condition = "Resp.Inscripto";
       return { condition };
     }
   } catch (error) {

@@ -8,10 +8,12 @@ async function extractRecipe(filepath) {
     const texto = data.text;
 
     if (texto.includes("Comp. Nro:")) {
-      const comprobante = /00003.*?([\d.,]+)/i.exec(texto);
+      const comprobanteRegex = /00003\s+(\d{8})/i;
+      const match = comprobanteRegex.exec(texto);
 
-      if (comprobante) {
-        const comp = comprobante[0];
+      if (match) {
+        let comp = `00003 ${match[1]}`;
+        comp = formatComp(comp);
         return { comp };
       } else {
         return {
@@ -24,6 +26,17 @@ async function extractRecipe(filepath) {
   } catch (error) {
     return { error: `No se pudo leer el archivo${error.message}` };
   }
+}
+
+function formatComp(comp) {
+  const parts = comp.split(" ");
+  if (parts.length === 2) {
+    const firstPart = parseInt(parts[0], 10).toString(); // Elimina ceros a la izquierda
+    const secondPart = parts[1].slice(-4); // Toma los últimos 4 dígitos
+
+    return `${firstPart}--${secondPart}`;
+  }
+  return comp;
 }
 
 function renderPage(pageData) {

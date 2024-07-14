@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./style.css" />
     <title>Lector de PDF</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap");
+    </style>
   </head>
   <body>
     <h1>Lector de PDF</h1>
@@ -26,11 +29,15 @@
     </div>
     <div class="buttons-container">
       <button class="button" id="selectAll">Seleccionar Todos</button>
-      <button class="button" id="sortButton">Ordenar</button>
-      <button class="button" id="apply21">Aplicar 21%</button>
-      <button class="button" id="apply105">Aplicar 10,5%</button>
+      <div class="action-buttons-container">
+        <button class="button" id="sortButton">Ordenar</button>
+        <button class="button" id="apply21">Aplicar 21%</button>
+        <button class="button" id="apply105">Aplicar 10,5%</button>
+      </div>
+      <button class="button" id="exportButton">Exportar a Excel</button>
     </div>
     <div id="table-container"></div>
+    <script src="../node_modules/xlsx/dist/xlsx.full.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

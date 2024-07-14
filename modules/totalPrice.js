@@ -10,7 +10,8 @@ async function totalPrice(filepath) {
     if (texto.includes("COD. 01") && texto.includes("Importe Total")) {
       const numberMatch = /Importe\s+Total.*?([\d.,]+)/i.exec(texto);
       if (numberMatch) {
-        const importeTotal = numberMatch[1];
+        let importeTotal = numberMatch[1];
+        importeTotal = importeTotal.replace(",", ".");
         return { importeTotal };
       } else {
         return { error: `Error al obtener el Importe Total ${error.message}` };
@@ -27,7 +28,8 @@ async function totalPrice(filepath) {
           const maxNumber = numbers.reduce((max, num) => {
             return num.length > max.length ? num : max;
           }, "");
-          return { importeTotal: maxNumber };
+          const importeTotal = maxNumber.replace(",", ".");
+          return { importeTotal };
         } else {
           return { error: `Error al obtener numeros ${error.message}` };
         }

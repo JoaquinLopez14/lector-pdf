@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { format } = require("path");
 const pdf = require("pdf-parse");
 
 async function extractCuit(filepath) {
@@ -7,12 +8,15 @@ async function extractCuit(filepath) {
     const data = await pdf(dataBuffer, { pagerender: renderPage });
     const texto = data.text;
 
+    let cuit;
     if (texto.includes("Doc.:")) {
-      const cuit = " ";
+      cuit = " ";
       return { cuit };
     } else {
       const cuitRegex = /33714336989.*?([\d.,]+)/i.exec(texto);
-      const cuit = cuitRegex[1];
+      cuit = cuitRegex[1];
+
+      cuit = formatCuit(cuit);
 
       return { cuit };
     }
@@ -32,6 +36,13 @@ function renderPage(pageData) {
     });
   }
   return "";
+}
+
+function formatCuit(cuit) {
+  if (cuit.length === 11) {
+    return `${cuit.slice(0, 2)}-${cuit.slice(2, 10)}-${cuit.slice(10)}`;
+  }
+  return cuit;
 }
 
 module.exports = { extractCuit };

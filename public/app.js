@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectAllButton = document.getElementById("selectAll");
   const apply21Button = document.getElementById("apply21");
   const apply105Button = document.getElementById("apply105");
+  const exportButton = document.getElementById("exportButton");
 
   let results = []; // Guardar los resultados globalmente
 
@@ -30,6 +31,41 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error:", error);
     }
   });
+
+  // Función para exportar la tabla a Excel
+  function exportToExcel() {
+    // Crear un nuevo libro de Excel
+    const wb = XLSX.utils.book_new();
+
+    // Obtener la tabla HTML original
+    const originalTable = document.querySelector("#table-container table");
+
+    // Clonar la tabla para manipulación
+    const clonedTable = originalTable.cloneNode(true);
+
+    // Eliminar la columna de "Seleccionar"
+    const clonedTableHead = clonedTable.querySelector("thead tr");
+    const clonedTableBody = clonedTable.querySelectorAll("tbody tr");
+
+    // Eliminar el primer th (header) de la columna de selección
+    clonedTableHead.removeChild(clonedTableHead.firstChild);
+
+    // Eliminar el primer td (data) de cada fila del cuerpo de la tabla
+    clonedTableBody.forEach((row) => {
+      row.removeChild(row.firstChild);
+    });
+
+    // Convertir la tabla clonada a una hoja de Excel
+    const ws = XLSX.utils.table_to_sheet(clonedTable);
+
+    // Añadir la hoja al libro de Excel
+    XLSX.utils.book_append_sheet(wb, ws, "Facturas");
+
+    // Guardar el libro como archivo Excel
+    XLSX.writeFile(wb, "facturas.xlsx");
+  }
+
+  exportButton.addEventListener("click", exportToExcel);
 
   selectAllButton.addEventListener("click", () => {
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -157,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <th>Neto Gravado 10,5</th>
                       <th>IVA 21</th>
                       <th>IVA 10,5</th>
-                      <th>Total Price</th>
+                      <th>Total</th>
                   </tr>
               </thead>
               <tbody>

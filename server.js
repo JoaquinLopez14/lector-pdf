@@ -12,6 +12,14 @@ const { extractCuit } = require("./modules/cuit.js");
 const app = express();
 const PORT = 3000;
 
+// Servir archivos estáticos desde la carpeta node_modules
+app.use("/node_modules", express.static(__dirname + "/node_modules"));
+
+// Ruta para servir tu archivo HTML principal
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
+
 // Configuración de multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
