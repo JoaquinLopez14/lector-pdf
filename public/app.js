@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const apply105Button = document.getElementById("apply105");
   const exportButton = document.getElementById("exportButton");
 
-  let results = []; // Guardar los resultados globalmente
+  let results = [];
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -37,23 +37,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Crear un nuevo libro de Excel
     const wb = XLSX.utils.book_new();
 
-    // Obtener la tabla HTML original
-    const originalTable = document.querySelector("#table-container table");
+    // Obtener la tabla HTML
+    const htmlTable = document.querySelector("#table-container table");
 
-    // Clonar la tabla para manipulación
-    const clonedTable = originalTable.cloneNode(true);
+    // Crear una copia de la tabla sin la columna "Seleccionar"
+    const clonedTable = htmlTable.cloneNode(true);
 
-    // Eliminar la columna de "Seleccionar"
-    const clonedTableHead = clonedTable.querySelector("thead tr");
-    const clonedTableBody = clonedTable.querySelectorAll("tbody tr");
-
-    // Eliminar el primer th (header) de la columna de selección
-    clonedTableHead.removeChild(clonedTableHead.firstChild);
-
-    // Eliminar el primer td (data) de cada fila del cuerpo de la tabla
-    clonedTableBody.forEach((row) => {
-      row.removeChild(row.firstChild);
-    });
+    // Remover la columna "Seleccionar" de la copia
+    for (let row of clonedTable.rows) {
+      row.deleteCell(0);
+    }
 
     // Convertir la tabla clonada a una hoja de Excel
     const ws = XLSX.utils.table_to_sheet(clonedTable);
@@ -85,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   apply21Button.addEventListener("click", () => {
-    // Obtener las facturas seleccionadas
     const selectedRows = document.querySelectorAll(
       'input[type="checkbox"]:checked'
     );
@@ -95,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Iterar sobre las facturas seleccionadas y aplicar el 21%
     selectedRows.forEach((checkbox) => {
       const rowIndex = checkbox.getAttribute("data-index");
       const selectedResult = results[rowIndex];
@@ -107,19 +98,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Realizar operaciones para aplicar el 21%
       if (selectedResult.totalPrice) {
         const totalPrice = parseFloat(
           selectedResult.totalPrice.replace(",", ".")
-        ); // Convertir a número
+        );
 
         if (!isNaN(totalPrice)) {
           const netoGravado21 = totalPrice / 1.21;
           const iva21 = netoGravado21 * 0.21;
 
-          // Actualizar la tabla con los resultados
-          selectedResult.netoGravado21 = netoGravado21.toFixed(2); // Redondear a 2 decimales
-          selectedResult.iva21 = iva21.toFixed(2); // Redondear a 2 decimales
+          selectedResult.netoGravado21 = netoGravado21.toFixed(2);
+          selectedResult.iva21 = iva21.toFixed(2);
 
           const htmlTable = buildHtmlTable(results);
           tableContainer.innerHTML = htmlTable;
@@ -135,16 +124,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   apply105Button.addEventListener("click", () => {
-    const selectRows = document.querySelectorAll(
+    const selectedRows = document.querySelectorAll(
       'input[type="checkbox"]:checked'
     );
 
-    if (selectRows.length === 0) {
+    if (selectedRows.length === 0) {
       alert("Selecciona al menos una factura para aplicar");
       return;
     }
 
-    selectRows.forEach((checkbox) => {
+    selectedRows.forEach((checkbox) => {
       const rowIndex = checkbox.getAttribute("data-index");
       const selectedResult = results[rowIndex];
 
@@ -161,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
           const netoGravado105 = totalPrice / 1.105;
           const iva105 = netoGravado105 * 0.105;
 
-          // Actualizar la tabla con los resultados
           selectedResult.netoGravado105 = netoGravado105.toFixed(2);
           selectedResult.iva105 = iva105.toFixed(2);
 
@@ -180,47 +168,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function buildHtmlTable(results) {
     let htmlTable = `
-          <table>
-              <thead>
-                  <tr>
-                      <th>Seleccionar</th>
-                      <th>Día</th>
-                      <th>Tipo</th>
-                      <th>Recibo</th>
-                      <th>Condición</th>
-                      <th>CUIT</th>
-                      <th>Neto Gravado 21</th>
-                      <th>Neto Gravado 10,5</th>
-                      <th>IVA 21</th>
-                      <th>IVA 10,5</th>
-                      <th>Total</th>
-                  </tr>
-              </thead>
-              <tbody>
-      `;
+      <table>
+        <thead>
+          <tr>
+            <th>Seleccionar</th>
+            <th>Día</th>
+            <th>Tipo</th>
+            <th>Recibo</th>
+            <th>Condición</th>
+            <th>CUIT</th>
+            <th>Neto Gravado 21</th>
+            <th>Neto Gravado 10,5</th>
+            <th>IVA 21</th>
+            <th>IVA 10,5</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
 
     results.forEach((result, index) => {
       htmlTable += `
-              <tr>
-                  <td><input type="checkbox" data-index="${index}" /></td>
-                  <td>${result.day || "-"}</td>
-                  <td>${result.type || "-"}</td>
-                  <td>${result.recipe || "-"}</td>
-                  <td>${result.condition || "-"}</td>
-                  <td>${result.cuit || "-"}</td>
-                  <td>${result.netoGravado21 || "-"}</td>
-                  <td>${result.netoGravado105 || "-"}</td>
-                  <td>${result.iva21 || "-"}</td>
-                  <td>${result.iva105 || "-"}</td>
-                  <td>${result.totalPrice || "-"}</td>
-              </tr>
-          `;
+        <tr>
+          <td><input type="checkbox" data-index="${index}" /></td>
+          <td>${result.day || "-"}</td>
+          <td>${result.type || "-"}</td>
+          <td>${result.recipe || "-"}</td>
+          <td>${result.condition || "-"}</td>
+          <td>${result.cuit || "-"}</td>
+          <td>${result.netoGravado21 || "-"}</td>
+          <td>${result.netoGravado105 || "-"}</td>
+          <td>${result.iva21 || "-"}</td>
+          <td>${result.iva105 || "-"}</td>
+          <td>${result.totalPrice || "-"}</td>
+        </tr>
+      `;
     });
 
     htmlTable += `
-          </tbody>
+        </tbody>
       </table>
-      `;
+    `;
 
     return htmlTable;
   }

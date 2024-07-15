@@ -1,5 +1,4 @@
 const fs = require("fs");
-const { format } = require("path");
 const pdf = require("pdf-parse");
 
 async function extractCuit(filepath) {
@@ -9,8 +8,22 @@ async function extractCuit(filepath) {
     const texto = data.text;
 
     let cuit;
+
     if (texto.includes("Doc.:")) {
       cuit = " ";
+      return { cuit };
+    } else if (texto.includes("IVA Sujeto Exento")) {
+      const cuitExentoRegex = /.{0,20}Código\s+Producto.{0,0}/i;
+      const cuitExento = cuitExentoRegex.exec(texto);
+      const context = cuitExento[0];
+      const cuitMatch = context.match(/[\d.,]+/g);
+
+      if (cuitMatch) {
+        cuit = cuitMatch[0];
+        cuit = formatCuit(cuit);
+      } else {
+        cuit = "No se encontró CUIT";
+      }
       return { cuit };
     } else {
       const cuitRegex = /33714336989.*?([\d.,]+)/i.exec(texto);
