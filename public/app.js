@@ -71,8 +71,18 @@ document.addEventListener("DOMContentLoaded", () => {
     results.sort((a, b) => {
       const dayA = parseInt(a.day) || 0;
       const dayB = parseInt(b.day) || 0;
-      return dayA - dayB;
+
+      if (dayA !== dayB) return dayA - dayB;
+
+      const typeA = a.type === "A" ? 1 : 0;
+      const typeB = b.type === "A" ? 1 : 0;
+      if (typeA !== typeB) return typeA - typeB;
+
+      const numA = parseInt(a.recipe.replace(/[^0-9]/g, ""));
+      const numB = parseInt(b.recipe.replace(/[^0-9]/g, ""));
+      return numA - numB;
     });
+
     const htmlTable = buildHtmlTable(results);
     tableContainer.innerHTML = htmlTable;
   });
