@@ -10,13 +10,12 @@ const { extractCondition } = require("./modules/conditionIva");
 const { extractCuit } = require("./modules/cuit.js");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use("/node_modules", express.static(__dirname + "/node_modules"));
-
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
@@ -77,7 +76,7 @@ app.post("/process", upload.array("pdf", 62), async (req, res) => {
         });
       }
 
-      fs.unlinkSync(filepath); // Eliminar el archivo después de procesarlo
+      fs.unlinkSync(filepath);
     } catch (error) {
       results.push({ filepath: file.originalname, error: error.message });
     }
