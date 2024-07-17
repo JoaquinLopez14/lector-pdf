@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData(form);
 
     try {
-      const response = await fetch("/", {
+      const response = await fetch("/process", {
         method: "POST",
         body: formData,
       });

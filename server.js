@@ -1,5 +1,5 @@
 const express = require("express");
-const multer = require("multer");
+const fileUpload = require("express-fileupload");
 const path = require("path");
 const fs = require("fs");
 const { totalPrice } = require("./modules/totalPrice");
@@ -12,34 +12,36 @@ const { extractCuit } = require("./modules/cuit.js");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, "public")));
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 
+app.use(express.static(path.join(__dirname, "public")));
+app.use(fileUpload());
+
+// Ruta para servir el archivo HTML
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Configuración de multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-const upload = multer({ storage });
-
 // Procesar los PDF subidos
-app.post("/", upload.array("pdf", 62), async (req, res) => {
-  const files = req.files;
+app.post("/process", async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send("No files were uploaded.");
+  }
+
+  const files = req.files.pdf; // 'pdf' es el nombre del input en tu formulario
   const results = [];
 
   console.log("Archivos subidos:", files);
 
-  for (const file of files) {
-    const filepath = path.join(__dirname, "uploads", file.filename);
+  const processFile = async (file) => {
+    const filepath = path.join(uploadsDir, `${Date.now()}-${file.name}`);
 
     try {
+      await file.mv(filepath);
+
       console.log(`Processing file: ${filepath}`);
       const dayResult = await extractDay(filepath);
       const typeResult = await extractType(filepath);
@@ -65,12 +67,12 @@ app.post("/", upload.array("pdf", 62), async (req, res) => {
           cuitResult,
         });
         results.push({
-          filepath: file.originalname,
+          filepath: file.name,
           error: "Error en la extracción de datos",
         });
       } else {
         results.push({
-          filepath: file.originalname,
+          filepath: file.name,
           day: dayResult.dia,
           type: typeResult.type,
           recipe: recipeResult.comp,
@@ -80,9 +82,17 @@ app.post("/", upload.array("pdf", 62), async (req, res) => {
         });
       }
     } catch (error) {
-      console.error(`Error processing file: ${file.originalname}`, error);
-      results.push({ filepath: file.originalname, error: error.message });
+      console.error(`Error processing file: ${file.name}`, error);
+      results.push({ filepath: file.name, error: error.message });
     }
+  };
+
+  if (Array.isArray(files)) {
+    for (const file of files) {
+      await processFile(file);
+    }
+  } else {
+    await processFile(files);
   }
 
   res.json(results);
