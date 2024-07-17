@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
 // Configuración de multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, "uploads");
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -29,17 +29,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-app.use(express.static("public"));
-
 // Procesar los PDF subidos
 app.post("/process", upload.array("pdf", 62), async (req, res) => {
   const files = req.files;
   const results = [];
 
+  console.log("Archivos subidos:", files);
+
   for (const file of files) {
     const filepath = path.join(__dirname, "uploads", file.filename);
 
     try {
+      console.log(`Processing file: ${filepath}`);
       const dayResult = await extractDay(filepath);
       const typeResult = await extractType(filepath);
       const priceResult = await totalPrice(filepath);
@@ -55,6 +56,14 @@ app.post("/process", upload.array("pdf", 62), async (req, res) => {
         conditionResult.error ||
         cuitResult.error
       ) {
+        console.error("Error in data extraction", {
+          dayResult,
+          typeResult,
+          priceResult,
+          recipeResult,
+          conditionResult,
+          cuitResult,
+        });
         results.push({
           filepath: file.originalname,
           error: "Error en la extracción de datos",
@@ -70,9 +79,8 @@ app.post("/process", upload.array("pdf", 62), async (req, res) => {
           totalPrice: priceResult.importeTotal,
         });
       }
-
-      fs.unlinkSync(filepath);
     } catch (error) {
+      console.error(`Error processing file: ${file.originalname}`, error);
       results.push({ filepath: file.originalname, error: error.message });
     }
   }
