@@ -2,6 +2,7 @@ const express = require("express");
 const fileUpload = require("express-fileupload");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const { totalPrice } = require("./modules/totalPrice");
 const { extractDay } = require("./modules/day");
 const { extractType } = require("./modules/type");
@@ -11,11 +12,6 @@ const { extractCuit } = require("./modules/cuit.js");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(fileUpload());
@@ -37,10 +33,12 @@ app.post("/process", async (req, res) => {
   console.log("Archivos subidos:", files);
 
   const processFile = async (file) => {
-    const filepath = path.join(uploadsDir, `${Date.now()}-${file.name}`);
+    const buffer = file.data;
+    const filepath = path.join(os.tmpdir(), `${Date.now()}-${file.name}`);
 
     try {
-      await file.mv(filepath);
+      // Guarda el archivo temporalmente en el directorio temporal
+      fs.writeFileSync(filepath, buffer);
 
       console.log(`Processing file: ${filepath}`);
       const dayResult = await extractDay(filepath);
@@ -81,6 +79,8 @@ app.post("/process", async (req, res) => {
           totalPrice: priceResult.importeTotal,
         });
       }
+
+      fs.unlinkSync(filepath); // Eliminar el archivo después de procesarlo
     } catch (error) {
       console.error(`Error processing file: ${file.name}`, error);
       results.push({ filepath: file.name, error: error.message });
