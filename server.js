@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Procesar los PDF subidos
-app.post("/process", upload.array("pdf", 62), async (req, res) => {
+app.post("/", upload.array("pdf", 62), async (req, res) => {
   const files = req.files;
   const results = [];
 
