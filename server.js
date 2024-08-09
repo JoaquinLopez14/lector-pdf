@@ -14,6 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/test", express.static(path.join(__dirname, "test")));
 app.use(fileUpload());
 
 // Ruta para servir el archivo HTML

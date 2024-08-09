@@ -39,6 +39,11 @@ body {
   margin-top: 60px;
 }
 
+#testPDF {
+  width: 200px;
+  margin-bottom: 20px;
+}
+
 .action-buttons-container {
   display: flex;
   align-items: center;

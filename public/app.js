@@ -9,6 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let results = [];
 
+  const downloadPDF = document.getElementById("testPDF");
+
+  downloadPDF.addEventListener("click", () => {
+    const pdfs = [
+      "test/test1.pdf",
+      "test/test2.pdf",
+      "test/test3.pdf",
+      "test/test4.pdf",
+      "test/test5.pdf",
+    ];
+    ("");
+    pdfs.forEach((pdf) => {
+      const link = document.createElement("a");
+      link.href = pdf;
+      link.download = pdf.split("/").pop();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
